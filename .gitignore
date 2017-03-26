@@ -4,3 +4,5 @@ vehicles/
 .ipynb_checkpoints/
 /color_spaces
 *.mp4
+__pycache__/
+*.p
