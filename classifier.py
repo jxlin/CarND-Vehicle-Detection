@@ -78,56 +78,61 @@ def extract_features(img, cspace='HLS'):
         hist_features, bin_features, channel1, channel2, channel3))
 
 
-t0 = time.time()
-car_features = np.array(
-    [extract_features(img, cspace=color_space) for img in vehicle_imgs])
-noncar_features = np.array(
-    [extract_features(img, cspace=color_space) for img in nonvehicle_imgs])
-t1 = time.time()
-extract_duration = round(t1 - t0, 2)
+def main():
+    t0 = time.time()
+    car_features = np.array(
+        [extract_features(img, cspace=color_space) for img in vehicle_imgs])
+    noncar_features = np.array(
+        [extract_features(img, cspace=color_space) for img in nonvehicle_imgs])
+    t1 = time.time()
+    extract_duration = round(t1 - t0, 2)
 
 # define features
-X = np.vstack((car_features, noncar_features)).astype(np.float64)
-X_scaler = StandardScaler().fit(X)
-scaled_X = X_scaler.transform(X)
+    X = np.vstack((car_features, noncar_features)).astype(np.float64)
+    X_scaler = StandardScaler().fit(X)
+    scaled_X = X_scaler.transform(X)
 # define labels
-y = np.hstack((np.ones(len(car_features)),
-               np.zeros(len(noncar_features))))
+    y = np.hstack((np.ones(len(car_features)),
+                   np.zeros(len(noncar_features))))
 
-rand_state = np.random.randint(0, 101)
-X_train, X_test, y_train, y_test = train_test_split(
-    scaled_X, y, test_size=0.2, random_state=rand_state)
+    rand_state = np.random.randint(0, 101)
+    X_train, X_test, y_train, y_test = train_test_split(
+        scaled_X, y, test_size=0.2, random_state=rand_state)
 
-svc = LinearSVC()
-t2 = time.time()
-svc.fit(X_train, y_train)
-t3 = time.time()
+    svc = LinearSVC()
+    t2 = time.time()
+    svc.fit(X_train, y_train)
+    t3 = time.time()
 
-train_duration = round(t3-t2, 2)
-t4 = time.time()
-accuracy = svc.score(X_test, y_test)
-t5 = time.time()
-score_duration = round(t5-t4, 2)
+    train_duration = round(t3-t2, 2)
+    t4 = time.time()
+    accuracy = svc.score(X_test, y_test)
+    t5 = time.time()
+    score_duration = round(t5-t4, 2)
 
-print('| Color space | Feature extraction |'
-      'Training time | Predict Time | Accuract |')
-print('|-------|-------|-------|-------|-------|')
-print('| %s | %.2f | %.2f | %.2f | %.4f |' % (
-    color_space, extract_duration, train_duration, score_duration, accuracy))
+    print('| Color space | Feature extraction |'
+          'Training time | Predict Time | Accuract |')
+    print('|-------|-------|-------|-------|-------|')
+    print('| %s | %.2f | %.2f | %.2f | %.4f |' % (
+        color_space, extract_duration, train_duration,
+        score_duration, accuracy))
+
+    data_pickle = {
+        'svc': svc,
+        'scaler': X_scaler,
+        'orient': orient,
+        'pix_per_cell': pix_per_cell,
+        'cell_per_block': cell_per_block,
+        'spatial_size': spatial_size,
+        'hist_bins': hist_bins,
+        'color_space': color_space,
+    }
+
+    filename = 'svc_pickle.p'
+    with open(filename, 'wb') as f:
+        pickle.dump(data_pickle, f)
+        print('params saved to %s' % filename)
 
 
-data_pickle = {
-    'svc': svc,
-    'scaler': X_scaler,
-    'orient': orient,
-    'pix_per_cell': pix_per_cell,
-    'cell_per_block': cell_per_block,
-    'spatial_size': spatial_size,
-    'hist_bins': hist_bins,
-    'color_space': color_space,
-}
-
-filename = 'svc_pickle.p'
-with open(filename, 'wb') as f:
-    pickle.dump(data_pickle, f)
-    print('params saved to %s' % filename)
+if __name__ == '__main__':
+    main()

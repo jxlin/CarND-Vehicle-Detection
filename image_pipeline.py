@@ -1,11 +1,28 @@
 # -*- coding: utf-8 -*-
 
+from collections import deque
+from lanelines import LaneFinder
 from moviepy.editor import VideoFileClip
+from scipy.ndimage.measurements import label
+from vehicle_detection import find_cars
 import cv2
 import numpy as np
-from lanelines import LaneFinder
 
+# vehicle detection constants
+searches = [
+    (380, 500, 1.0, 1, (0, 0, 255)),  # 64x64
+    (400, 600, 1.587, 2, (0, 255, 0)),  # 101x101
+    (400, 710, 2.52, 2, (255, 0, 0)),  # 161x161
+    (400, 720, 4.0, 2, (255, 255, 0)),  # 256x256
+]
+nframes_to_keep = 10
+nframes = deque([], nframes_to_keep)
+frame_decay = 0.85
+
+# save data across frames
 lf = LaneFinder()
+nframes_heat = None
+heat_zeros = None
 
 
 def detect_road(undist):
@@ -49,11 +66,87 @@ def detect_road(undist):
     return road, rad_text, offset_text
 
 
-def img_pipeline(img):
+def _add_heat(heatmap, bbox_list):
+    for box in bbox_list:
+        heatmap[box[0][1]:box[1][1], box[0][0]:box[1][0]] += 1
+    return heatmap
 
+
+def _apply_threshold(heatmap, threshold):
+    result = np.copy(heatmap)
+    result[heatmap <= threshold] = 0
+    return result
+
+
+def draw_labeled_bboxes(img, labels):
+    for car_number in range(1, labels[1]+1):
+        nonzero = (labels[0] == car_number).nonzero()
+        # Identify x and y values of those pixels
+        nonzeroy = np.array(nonzero[0])
+        nonzerox = np.array(nonzero[1])
+        # Define a bounding box based on min/max x and y
+        bbox = (
+            (np.min(nonzerox), np.min(nonzeroy)),
+            (np.max(nonzerox), np.max(nonzeroy)))
+        # Draw the box on the image
+        cv2.rectangle(img, bbox[0], bbox[1], (0, 0, 255), 6)
+    # Return the image
+    return img
+
+
+def detect_vehicle(rgb_img):
+    global nframes_heat
+    global heat_zeros
+    global frames_decay
+
+    img = cv2.cvtColor(rgb_img, cv2.COLOR_RGB2BGR)
+    bbox_list = []
+    for ystart, ystop, scale, cells_per_step, color in searches:
+        bboxes = find_cars(img, ystart, ystop, scale, cells_per_step)
+        if len(bboxes) > 0:
+            bbox_list.append(bboxes)
+
+    # initialize data across frames if None
+    if nframes_heat is None:
+        nframes_heat = np.zeros_like(img[:, :, 0]).astype(np.float)
+        heat_zeros = np.zeros_like(img[:, :, 0]).astype(np.float)
+
+    # calculate single frame heatmap
+    one_frame_heat = np.zeros_like(img[:, :, 0]).astype(np.float)
+    if len(bbox_list) > 0:
+        one_frame_heat = _add_heat(one_frame_heat, np.concatenate(bbox_list))
+
+    # substract heat older than nframes
+    if len(nframes) == nframes_to_keep:
+        oldest_heat = nframes.popleft()
+        nframes_heat = (
+            nframes_heat -
+            oldest_heat * (frame_decay ** (nframes_to_keep - 1)))
+
+    nframes.append(one_frame_heat)
+    nframes_heat = nframes_heat * frame_decay + one_frame_heat
+
+    # Apply threshold to help remove false positives
+    heat = _apply_threshold(nframes_heat, 20)
+    # Visualize the heatmap for video
+
+    # Find final boxes from heatmap using label function
+    labels = label(heat)
+    draw_img = draw_labeled_bboxes(np.copy(rgb_img), labels)
+    return draw_img
+
+    # heatmap_channel_r = np.clip(nframes_heat*5, 0, 255)
+    # heatmap_rgb = np.dstack((heatmap_channel_r, heat_zeros, heat_zeros))
+    # combined = np.hstack((draw_img, heatmap_rgb))
+    # return combined
+
+
+def img_pipeline(img):
     undist = lf.undistort(img)
+    result = detect_vehicle(undist)
+
     road, rad_text, offset_text = detect_road(undist)
-    result = cv2.addWeighted(undist, 1.0, road, 0.3, 0)
+    result = cv2.addWeighted(result, 1.0, road, 0.3, 0)
     # write radius and offset onto image
     result = cv2.putText(
         result, rad_text,
@@ -65,7 +158,7 @@ def img_pipeline(img):
 
 
 # NOTE: f1_image function expects color images!!
-outfile = 'extracted_results.mp4'
-clip1 = VideoFileClip("project_video.mp4").subclip(0, 5)
+outfile = 'combined_result.mp4'
+clip1 = VideoFileClip("project_video.mp4")
 white_clip = clip1.fl_image(img_pipeline)
 white_clip.write_videofile(outfile, audio=False)
