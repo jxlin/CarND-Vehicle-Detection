@@ -1,5 +1,5 @@
 ## P5 Vehicle Detection Report
-###Author: Hsin-Cheng Chao (olala7846@gmail.com)
+### Author: Hsin-Cheng Chao (olala7846@gmail.com)
 ---
 
 **Vehicle Detection Project**
@@ -7,7 +7,7 @@
 The goals / steps of this project are the following:
 
 * Perform a Histogram of Oriented Gradients (HOG) feature extraction on a labeled training set of images and train a classifier Linear SVM classifier
-* Optionally, you can also apply a color transform and append binned color features, as well as histograms of color, to your HOG feature vector. 
+* Optionally, you can also apply a color transform and append binned color features, as well as histograms of color, to your HOG feature vector.
 * Note: for those first two steps don't forget to normalize your features and randomize a selection for training and testing.
 * Implement a sliding-window technique and use your trained classifier to search for vehicles in images.
 * Run your pipeline on a video stream (start with the test_video.mp4 and later implement on full project_video.mp4) and create a heat map of recurring detections frame by frame to reject outliers and follow detected vehicles.
@@ -15,17 +15,17 @@ The goals / steps of this project are the following:
 
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
-###Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
+### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.
 
 ---
-###Writeup / README
+### Writeup / README
 
-####1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.  
+#### 1. Provide a Writeup / README that includes all the rubric points and how you addressed each one.
 You're reading it!
 
-###Histogram of Oriented Gradients (HOG)
+### Histogram of Oriented Gradients (HOG)
 
-####1. Explain how (and identify where in your code) you extracted HOG features from the training images.
+#### 1. Explain how (and identify where in your code) you extracted HOG features from the training images.
 
 (The code is at the 5th cell of [Classifier.ipynb](./Classifier.ipynb))
 
@@ -40,12 +40,12 @@ Here is an example using the `YCrCb` color space and HOG parameters of `orientat
 ![Lab](./report/hog_Lab.png)
 ![Luv](./report/hog_Luv.png)
 
-####2. Explain how you settled on your final choice of HOG parameters.
+#### 2. Explain how you settled on your final choice of HOG parameters.
 
 I tried to train SVM classifier using only HOG features across different color spaces and different parameters.
 
 
-##### Results on different combinations 
+##### Results on different combinations
 **(orient, pixelc per cell, cells per block)**
 
 | Color space | (9, 8, 1) | (9, 8, 2) | (9, 8, 3) | (12, 8, 1) |
@@ -58,21 +58,21 @@ I tried to train SVM classifier using only HOG features across different color s
 | Lab | 0.9809 | 0.9848 | 0.9851 | 0.9392 |
 
 The result looks best at `2 cells per block` and `YUV` and `YCrCb` seems to be the best color space to train a classifier with.
- 
 
-####3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
 
-First I did a shuffle train test split on all image data (8793 vehicles and 8968 non-vehicles) using sklearn `train_test_split`, then I normalize the features using sklearn `StandardScaler`. I did a grid search on all color spaces (RGB, HLS, Luv, YCrCb, YUV, Lab) and different cells per block (1, 2, 3) and pick the combination of parameters results in the best accuracy as discuss above. 
+#### 3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
+
+First I did a shuffle train test split on all image data (8793 vehicles and 8968 non-vehicles) using sklearn `train_test_split`, then I normalize the features using sklearn `StandardScaler`. I did a grid search on all color spaces (RGB, HLS, Luv, YCrCb, YUV, Lab) and different cells per block (1, 2, 3) and pick the combination of parameters results in the best accuracy as discuss above.
 
 The code is at the 8th code cell in the `Classifier.ipynb`
 
-###Sliding Window Search
+### Sliding Window Search
 
-####1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
+#### 1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
 TODO(Olala): identify where's the code
 The window search is defined as the `find_car` function in the 3rd code cell of `SlidingWindow.ipynb`.
-After some trail and error, I decided to search wth window for 4 different scales 
+After some trail and error, I decided to search wth window for 4 different scales
 
 ```
 # ystart, ystop, scale, cells_per_step, color
@@ -84,13 +84,13 @@ searches = [
 ]
 ```
 
-####2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
+#### 2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
 To get the best accuracy, I decide to use not only the HOG features and also the color histogram and spatial bin features. I also tried on different number of histogram bins and different spatial bin resolutions to get the best result and reduce number of features required.
 
 ##### Results of accuracy on differe nbins
 
-| Color space | 256 | 128 | 64 | 32 | 16| 
+| Color space | 256 | 128 | 64 | 32 | 16|
 |-----|--------|--------|------|------|------|
 | HLS | 0.9561 | 0.9659 | 0.96 | 0.95 | 0.93 |
 | RGB | 0.9150 | 0.9223 | 0.92 | 0.91 | 0.89 |
@@ -105,12 +105,12 @@ To get the best accuracy, I decide to use not only the HOG features and also the
 
 | Color space | 16x16 | 32x32 | 64x64 |
 |-----|------|------|------|
-| HLS | 0.91 | 0.88 | 0.87 | 
-| RGB | 0.92 | 0.91 | 0.90 | 
-| Luv | 0.92 | 0.89 | 0.89 | 
-| YCr | 0.92 | 0.91 | 0.90 | 
-| YUV | 0.91 | 0.90 | 0.90 | 
-| Lab | 0.93 | 0.92 | 0.90 | 
+| HLS | 0.91 | 0.88 | 0.87 |
+| RGB | 0.92 | 0.91 | 0.90 |
+| Luv | 0.92 | 0.89 | 0.89 |
+| YCr | 0.92 | 0.91 | 0.90 |
+| YUV | 0.91 | 0.90 | 0.90 |
+| Lab | 0.93 | 0.92 | 0.90 |
 
 ##### Results combining HOG, color histogram, spatial bin
 
@@ -136,29 +136,29 @@ To increase the performance of my classifier I did the following things.
 
 ### Video Implementation
 
-####1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
+#### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
 
 Here's a [link to my video](https://youtu.be/3Xq27UI-I-U)
 
 
-####2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
+#### 2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
 
 I recorded the positions of positive detection window in each frame of the video. From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions. To get a more robost result, I use a `deque` to record the heatmap of last 10 frames  and sum the in a exponential decay fashion before applying the threshold.
-then I apply a threshold to the final heatmap and use used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected.  
+then I apply a threshold to the final heatmap and use used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected.
 
 (code in the 5th code cell of `SlidingWindow.ipynb`)
 
-###Here a image of sliding window of 4 different scales (with one false positive)
+### Here a image of sliding window of 4 different scales (with one false positive)
 ![Sliding window](./report/sliding_window.png)
-###Here a image of heatmap and the result detection bounding boxes
+### Here a image of heatmap and the result detection bounding boxes
 ![Heat map](./report/heatmap.png)
 
 
 ---
 
-###Discussion
+### Discussion
 
-####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
+#### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
 When I finished traind my classifier, I thought the accuracy was good enough (0.99). But after applying onto the road video frames, I soon recignized that 99% just ins't good enough, since we are scanning so many windows per frame, it is almost impossible to not have any false positive result.
 
