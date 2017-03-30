@@ -10,7 +10,7 @@ This project combines Computer Vision and Machine Learning to tract vehicle and 
 ## Setup
 * To run the project, first setup environment using [Udacity Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit)
 * To view more detail about this project, please reference [My Report](./report.md)
-* To generate the combined (Vehicle detection and Lane line detection) video please see [image_pipeline.py](https://github.com/udacity/CarND-Term1-Starter-Kit)
+* To generate the combined (Vehicle detection and Lane line detection) video please see [image_pipeline.py](./image_pipeline.py)
 
 
 
