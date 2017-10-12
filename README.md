@@ -5,6 +5,17 @@ This project was cloned from [Udacity](https://github.com/udacity/CarND-Vehicle-
 ## Intro
 This project combines Computer Vision and Machine Learning to tract vehicle and detect lane line like the following video.
 
+### Lane Detection
+* Calibrate the camera using OpenCV with chessboard images
+* Detect lane lines using perspective transform and edge detection, the result capable of detecting lanes roughly 10 meters ahead and calculates the curvature of the current lane.
+
+### Vehicle Tracking
+Detect vehicles using computer vision (HOG) with machine learning (SVM) skills. 
+Track the vehicle using sliding window and smooth the result using temporal a heatmap.
+
+
+##### Click the following image to play video
+
 [![MY PROJECT RESULT](http://img.youtube.com/vi/5Y0BFjzWTwU/0.jpg)](http://www.youtube.com/watch?v=5Y0BFjzWTwU "Video tracking and Lane line detection")
 
 ## Setup
