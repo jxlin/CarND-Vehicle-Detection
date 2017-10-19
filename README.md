@@ -2,15 +2,15 @@
 
 This project was cloned from [Udacity](https://github.com/udacity/CarND-Vehicle-Detection) and modified by me(olala7846@gmail.com).
 
-## Intro
-This project combines Computer Vision and Machine Learning to tract vehicle and detect lane line like the following video.
+## Description
+Created a vehicle detection and tracking pipeline with OpenCV, histogram of oriented gradients (HOG), and support vector machines (SVM). Optimized and evaluated the model on video data from a automotive camera taken during highway driving.
 
 ### Lane Detection
 * Calibrate the camera using OpenCV with chessboard images
 * Detect lane lines using perspective transform and edge detection, the result capable of detecting lanes roughly 10 meters ahead and calculates the curvature of the current lane.
 
 ### Vehicle Tracking
-Detect vehicles using computer vision (HOG) with machine learning (SVM) skills. 
+Detect vehicles using computer vision (HOG) with machine learning (SVM) skills.
 Track the vehicle using sliding window and smooth the result using temporal a heatmap.
 
 
